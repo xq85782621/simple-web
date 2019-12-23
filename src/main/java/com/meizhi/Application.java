@@ -1,11 +1,11 @@
 package com.meizhi;
 
+import com.meizhi.common.util.JwtUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-@ServletComponentScan
 public class Application {
 
     public static void main(String[] args) {
@@ -13,5 +13,8 @@ public class Application {
 
     }
 
-
+    @Bean
+    public JwtUtil jwtUtil(){
+       return new JwtUtil();
+    }
 }

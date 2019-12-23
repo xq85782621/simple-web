@@ -1,0 +1,26 @@
+
+
+
+  权限验证的两种方式:
+
+  1. 使用 jwt + 拦截器
+
+        ** 登录逻辑
+            1.用户输入 phone + password 进行登录, 查询数据库, 不存在直接提示错误信息
+            2.存在则把 用户 user对象 的信息和 user对应的权限信息 apis 存入 claims,然后返回该token
+            3.每个接口上的 requestMapping 有个 name 属性,对应了 apis 里面的权限
+            4.用户带着 token 去访问各个接口,后端解析jwt有效并得到 claims 中的 apis ,判断 requestMapping 的 name 是否在 apis 中
+
+        ** jwt失效问题  实则根本没办法完全用无状态方式解决,傻逼设计,完全背离初衷
+            1.将 token 存入 DB（如 Redis）中，失效则删除；但增加了一个每次校验时候都要先从 DB 中查询 token 是否存在的步骤，而且违背了 JWT 的无状态原则（这不就和 session 一样了么？）。
+            2.维护一个 token 黑名单，失效则加入黑名单中。
+            3.在 JWT 中增加一个版本号字段，失效则改变该版本号。
+            4.在服务端设置加密的 key 时，为每个用户生成唯一的 key，失效则改变该 key。
+            5.前端清除,但是不安全,易被盗用
+
+
+        ** 刷新token
+        https://github.com/zsdnishishui/jwtRedis
+
+
+

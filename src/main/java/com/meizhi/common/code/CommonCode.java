@@ -15,6 +15,10 @@ public enum CommonCode implements ResultCode {
 
     //---系统错误返回码-----
     FAIL(false,10001,"操作失败"),
+    LOGIN_FAIL(false,10000,"登录失败,请检查用户名密码"),
+    TOKEN_PAST_DUE(false,10000,"token已过期,请从新登陆"),
+    TOKEN_NEED_REFRESH(false,10000,"token已过期,请刷新token"),
+    TOKEN_FAIL(false,10000,"token验证失败,请从新登录"),
     UN_AUTHENTICATED(false,10002,"您还未登录"),
     UN_AUTHORISE(false,10003,"权限不足"),
     SERVER_ERROR(false,99999,"抱歉，系统繁忙，请稍后重试！"),
