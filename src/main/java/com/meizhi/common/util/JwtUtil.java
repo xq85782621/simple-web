@@ -8,6 +8,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -79,10 +80,9 @@ public class JwtUtil {
      * token 过期超过1个小时,根据旧的token生成新token
      * @return
      */
-    public String getNewToken(String oldToken){
+    public String getNewToken(Claims claims){
         // 从旧的 token 中的 claims 中获取用户id,然后查到 user 对象, 根据新的user 对象生成新的token
         // 这里只是模拟,实际要从数据库中查询
-        Claims claims = parseJWT(oldToken);
         Integer userId = (Integer) claims.get("id");
         User user = new User();
         user.setId(userId);

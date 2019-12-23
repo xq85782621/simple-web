@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 校验token拦截器
@@ -27,6 +28,9 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -58,9 +62,35 @@ public class JwtInterceptor extends HandlerInterceptorAdapter {
                 throw new CustomException(CommonCode.UN_AUTHORISE);
             }
 
-        // 会自动抛出超时异常
+            // 会自动抛出超时异常
         } catch (ExpiredJwtException e) {
             System.err.println("==========================");
+            Claims claims = e.getClaims();
+            long issuedAt = claims.getIssuedAt().getTime();
+            long expireTime = claims.getExpiration().getTime();
+            Integer userId = (Integer) claims.get("id");
+
+            // 如果过期了一个星期了，就不必刷新token了，直接抛出异常，让用户从新登陆
+            if (System.currentTimeMillis() - issuedAt > 7 * 24 * 3600000) {
+                throw new CustomException(CommonCode.TOKEN_PAST_DUE);
+            }
+
+            // 说明只是当前token过期了
+            System.err.println("执行刷新token逻辑。，。");
+            String newToken = "";
+            // 1.先去redis中查找有没有token
+            String oldToken = (String) redisTemplate.opsForValue().get("userId:" + userId);
+            // 2.如果没有oldToken ,说明该请求是当前页面的并发请求中第一个访问到这里的
+            if (StrUtil.isBlank(oldToken)) {
+                // 生成新的token
+                newToken = jwtUtil.getNewToken(claims);
+                // 存入到redis中,并设置为30s过期,
+                redisTemplate.opsForValue().set("userId:" + userId, request.getHeader("token"), 30, TimeUnit.SECONDS);
+                response.setHeader("token", newToken);
+
+            }
+
+
         }
         // 说明权限验证通过,放行
         return true;
